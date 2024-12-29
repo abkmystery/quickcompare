@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuickCompare</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(to right, #4facfe, #00f2fe);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        h1 {
+            color: #fff;
+            margin-bottom: 20px;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            gap: 20px;
+            width: 80%;
+            max-width: 1200px;
+        }
+
+        .input-section {
+            background: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            flex: 1;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .input-section h2 {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .input-section textarea {
+            width: 100%;
+            height: 150px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            padding: 10px;
+        }
+
+        .input-section input[type="file"] {
+            margin-bottom: 10px;
+        }
+
+        .compare-btn {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            background: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .compare-btn:hover {
+            background: #45a049;
+        }
+
+        #result {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #fff;
+            text-align: center;
+            background: #333;
+            padding: 10px;
+            border-radius: 5px;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+        }
+    </style>
+    <script>
+        async function compareInputs() {
+            const text1 = document.querySelectorAll('textarea')[0].value;
+            const text2 = document.querySelectorAll('textarea')[1].value;
+            const file1 = document.querySelectorAll('input[type=file]')[0].files[0];
+            const file2 = document.querySelectorAll('input[type=file]')[1].files[0];
+
+            let formData = new FormData();
+            formData.append('text1', text1);
+            formData.append('text2', text2);
+            if (file1) formData.append('file1', file1);
+            if (file2) formData.append('file2', file2);
+
+            try {
+                const response = await fetch('/compare', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error('Comparison failed. Please check your inputs and try again.');
+                }
+
+                const result = await response.json();
+                if (result.error) {
+                    document.getElementById('result').innerText = "Error: " + result.error;
+                } else {
+                    document.getElementById('result').innerText = result.message;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('result').innerText = "Error: " + error.message;
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>QuickCompare</h1>
+    <div class="container">
+        <div class="input-section">
+            <h2>Input 1</h2>
+            <textarea placeholder="Paste or write text here..."></textarea>
+            <input type="file" accept=".txt,.pdf,.docx,.jpg,.jpeg,.png">
+        </div>
+        <div class="input-section">
+            <h2>Input 2</h2>
+            <textarea placeholder="Paste or write text here..."></textarea>
+            <input type="file" accept=".txt,.pdf,.docx,.jpg,.jpeg,.png">
+        </div>
+    </div>
+    <button class="compare-btn" onclick="compareInputs()">Compare</button>
+    <div id="result"></div>
+</body>
+</html>
